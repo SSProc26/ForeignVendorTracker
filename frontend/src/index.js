@@ -6,6 +6,7 @@ import "@/index.css";
 import App from "@/App";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { WordingProvider } from "@/contexts/WordingContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,7 +20,9 @@ root.render(
     <ThemeProvider>
       <AuthProvider>
         <QueryClientProvider client={queryClient}>
-          <App />
+          <WordingProvider>
+            <App />
+          </WordingProvider>
         </QueryClientProvider>
       </AuthProvider>
     </ThemeProvider>
