@@ -21,6 +21,19 @@ CATEGORIES = [
     {"key": "representativePermission", "label": "Representative Permission / Power of Attorney (Optional)", "group": "Optional Documents", "scope": "general"},
 ]
 
+GENERAL_DOC_INFO = {
+    "applicationLetter": {"example": "Application Letter signed by a Director of the company (template attached)", "concern": "Wajib berisi subfield code yang diajukan, alamat perusahaan (termasuk kode pos), telepon, faksimile, dan email. Pastikan ditandatangani oleh Direktur — bukan pihak lain kecuali disertai PoA."},
+    "statementLetter": {"example": "Statement Letter di atas kop surat resmi perusahaan (format terlampir)", "concern": "Cek menggunakan letterhead resmi perusahaan dan ditandatangani oleh CEO."},
+    "pactOfIntegrity": {"example": "Letter of Undertaking / Pact of Integrity (draft format terlampir)", "concern": "Pastikan ditandatangani Direktur dan sesuai format template yang dilampirkan."},
+    "bankReference": {"example": "Bank reference letter berkop surat & stempel resmi bank, mencantumkan nomor rekening perusahaan", "concern": "Cek stempel/tanda tangan resmi bank dan kecocokan nomor rekening dengan data di General Information."},
+    "financialAudit": {"example": "Financial Audit Report tahun berjalan — minimal berisi Balance Sheet & Independent Auditor's Report", "concern": "Pastikan diaudit oleh auditor independen bersertifikat, bukan laporan keuangan internal yang tidak diaudit."},
+    "workExperience": {"example": "Daftar pengalaman kerja 5 tahun terakhir sesuai subfield yang diajukan (client, lokasi proyek, waktu, nilai kontrak)", "concern": "Cocokkan subfield code pada pengalaman kerja dengan subfield yang diajukan; nama klien boleh disamarkan."},
+    "completionCertificate": {"example": "Completion certificate / minutes of acceptance untuk kontrak yang diajukan di Work Experience", "concern": "Cek pekerjaan minimal 90% selesai dan kesesuaian nomor kontrak dengan daftar pengalaman kerja."},
+    "safetyCert": {"example": "Certificate of Contractor Safety Management System sesuai subfield yang diajukan", "concern": "Opsional — cek relevansi sertifikat dengan jenis subfield yang diajukan."},
+    "equipmentList": {"example": "Daftar peralatan utama yang dipakai dalam operasional perusahaan", "concern": "Opsional — cek relevansi peralatan dengan subfield yang diajukan."},
+    "representativePermission": {"example": "Power of Attorney / surat kuasa perwakilan", "concern": "Wajib dilampirkan HANYA jika penandatangan Application Letter/Pact of Integrity/Statement Letter bukan anggota Direksi."},
+}
+
 COUNTRY_DB = {
     "Singapura": {"tag": "SG", "apostille": True, "categories": {
         "boardOwnership": {"example": "ACRA Business Profile — Register of Company Officers & Shareholders", "concern": "Cocokkan nama & % kepemilikan shareholder dengan form aplikasi; cek nominee shareholder."},

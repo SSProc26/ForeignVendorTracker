@@ -27,7 +27,7 @@ from auth_utils import (
     require_role,
 )
 from storage_utils import init_storage, put_object, get_object
-from reference_data import CATEGORIES, COUNTRY_DB, WORKFLOW_STATUSES
+from reference_data import CATEGORIES, COUNTRY_DB, WORKFLOW_STATUSES, GENERAL_DOC_INFO
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger("vendor-tracker")
@@ -110,7 +110,7 @@ class HistoryIn(BaseModel):
 
 
 class ThemeIn(BaseModel):
-    theme: str = Field(pattern="^(steel|forest|burgundy|slate|copper)$")
+    theme: str = Field(pattern="^(steel|forest|burgundy|slate|copper|editorial)$")
 
 
 DEFAULT_PASSCODE = "123456"
@@ -326,6 +326,12 @@ async def get_categories(authorization: str | None = Header(default=None)):
 async def get_countries(authorization: str | None = Header(default=None)):
     await _me(authorization)
     return COUNTRY_DB
+
+
+@api.get("/reference/general-docs")
+async def get_general_docs(authorization: str | None = Header(default=None)):
+    await _me(authorization)
+    return GENERAL_DOC_INFO
 
 
 @api.get("/reference/statuses")
@@ -1092,6 +1098,34 @@ async def set_theme(payload: ThemeIn, authorization: str | None = Header(default
     user = await _me(authorization)
     await db.users.update_one({"id": user["id"]}, {"$set": {"theme": payload.theme}})
     return {"theme": payload.theme}
+
+
+# ---------------------------------------------------------------------------
+# Wording / label customization (admin-editable UI copy)
+# ---------------------------------------------------------------------------
+@api.get("/settings/wording")
+async def get_wording():
+    """Public: the login page needs its labels before a token exists."""
+    doc = await db.settings.find_one({"key": "wording"}, {"_id": 0})
+    return (doc or {}).get("values", {})
+
+
+@api.put("/settings/wording")
+async def set_wording(payload: dict, authorization: str | None = Header(default=None)):
+    user = await _me(authorization)
+    require_role(user, "admin")
+    values = payload.get("values")
+    if not isinstance(values, dict):
+        raise HTTPException(status_code=400, detail="Field 'values' harus berupa object")
+    # Only persist string values; strip empties so the frontend falls back to defaults.
+    clean = {str(k): str(v) for k, v in values.items() if isinstance(v, (str, int, float)) and str(v).strip()}
+    await db.settings.update_one(
+        {"key": "wording"},
+        {"$set": {"key": "wording", "values": clean, "updated_at": now_iso(), "updated_by": user["name"]}},
+        upsert=True,
+    )
+    await log_audit(user, "update", "settings", "wording", {"count": len(clean)})
+    return clean
 
 
 # ---------------------------------------------------------------------------
