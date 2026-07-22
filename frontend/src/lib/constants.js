@@ -38,6 +38,26 @@ export function generalStatusLabel(id) {
   return GENERAL_STATUS[id] || "Draft";
 }
 
+/**
+ * Which statuses a given role may move a record to from its current status.
+ * Mirrors the RBAC enforced server-side in POST /vendors/{id}/status.
+ */
+export function allowedTransitions(current, role) {
+  const isApprover = role === "admin" || role === "approver";
+  const isReviewer = role !== "approver"; // reviewer + admin
+  const map = {
+    DRAFT:            isReviewer ? ["IN_REVIEW"] : [],
+    IN_REVIEW:        isReviewer ? ["PENDING_APPROVAL", "CLARIFICATION"] : [],
+    CLARIFICATION:    isReviewer ? ["IN_REVIEW"] : [],
+    RETURNED:         isReviewer ? ["IN_REVIEW"] : [],
+    PENDING_APPROVAL: isApprover ? ["APPROVED", "RETURNED"] : [],
+    APPROVED:         isApprover ? ["MYSSC_REQUESTED"] : [],
+    MYSSC_REQUESTED:  isApprover ? ["COMPLETED"] : [],
+    COMPLETED:        [],
+  };
+  return map[current] || [];
+}
+
 export function statusMeta(id) {
   return STATUSES.find((s) => s.id === id) || STATUSES[0];
 }
