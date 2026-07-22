@@ -6,12 +6,15 @@ import { Card } from "@/components/ui/card";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend,
 } from "recharts";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useWording } from "@/contexts/WordingContext";
 import { ArrowUpRight, Building2, Users2, FileCheck2, Files } from "lucide-react";
 
-const PIE_COLORS = ["#64748b", "#3b82f6", "#f59e0b", "#10b981", "#ef4444"];
+const PIE_COLORS = ["#64748b", "#3b82f6", "#f97316", "#f59e0b", "#ef4444", "#10b981", "#6366f1", "#0d9488"];
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+  const { t } = useWording();
   const { data: sum } = useQuery({
     queryKey: ["analytics-summary"],
     queryFn: async () => (await api.get("/analytics/summary")).data,
@@ -22,13 +25,14 @@ export default function Dashboard() {
   });
 
   const kpis = [
-    { label: "Total Vendors",    value: sum?.total_vendors ?? "—",    icon: Building2 },
-    { label: "Approved",         value: sum?.status_counts?.APPROVED ?? "—", icon: FileCheck2 },
-    { label: "Documents",        value: sum?.total_documents ?? "—",  icon: Files },
-    { label: "Users",            value: sum?.total_users ?? "—",      icon: Users2 },
+    { label: t("dashboard.kpiTotal"), value: sum?.total_vendors ?? "—", icon: Building2, to: "/ledger" },
+    { label: t("dashboard.kpiApproved"), value: sum?.status_counts?.APPROVED ?? "—", icon: FileCheck2, to: "/ledger?status=APPROVED" },
+    { label: t("dashboard.kpiDocs"), value: sum?.total_documents ?? "—", icon: Files, to: "/ledger" },
+    { label: t("dashboard.kpiUsers"), value: sum?.total_users ?? "—", icon: Users2, to: "/admin/users" },
   ];
 
   const statusData = STATUSES.map((s) => ({
+    id: s.id,
     name: s.label,
     value: sum?.status_counts?.[s.id] || 0,
   }));
@@ -40,24 +44,26 @@ export default function Dashboard() {
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <div className="overline">Overview</div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-sm text-muted-foreground mt-1">Ringkasan status vendor & aktivitas terkini.</p>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t("dashboard.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("dashboard.subtitle")}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {kpis.map((k) => (
-          <Card key={k.label} className="p-5">
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="overline">{k.label}</div>
-                <div className="text-2xl font-semibold mt-2 tabular-nums">{k.value}</div>
+          <Link key={k.label} to={k.to} data-testid={`kpi-card-${k.label.toLowerCase().replace(/\s+/g, "-")}`}>
+            <Card className="p-5 cursor-pointer hover:border-primary hover:shadow-sm transition-colors group">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="overline">{k.label}</div>
+                  <div className="text-2xl font-semibold mt-2 tabular-nums">{k.value}</div>
+                </div>
+                <div className="w-9 h-9 rounded-md bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                  <k.icon className="w-4 h-4" />
+                </div>
               </div>
-              <div className="w-9 h-9 rounded-md bg-primary/10 text-primary flex items-center justify-center">
-                <k.icon className="w-4 h-4" />
-              </div>
-            </div>
-          </Card>
+            </Card>
+          </Link>
         ))}
       </div>
 
@@ -78,7 +84,13 @@ export default function Dashboard() {
                   <XAxis dataKey="country" tick={{ fontSize: 11 }} interval={0} angle={-15} textAnchor="end" height={60} />
                   <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                   <Tooltip cursor={{ fill: "hsl(var(--muted))" }} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 12 }} />
-                  <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  <Bar
+                    dataKey="count"
+                    fill="hsl(var(--primary))"
+                    radius={[4, 4, 0, 0]}
+                    cursor="pointer"
+                    onClick={(data) => navigate(`/ledger?country=${encodeURIComponent(data.country)}`)}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -91,7 +103,16 @@ export default function Dashboard() {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={statusData} dataKey="value" nameKey="name" outerRadius={70} innerRadius={40} paddingAngle={2}>
+                <Pie
+                  data={statusData}
+                  dataKey="value"
+                  nameKey="name"
+                  outerRadius={70}
+                  innerRadius={40}
+                  paddingAngle={2}
+                  cursor="pointer"
+                  onClick={(data) => navigate(`/ledger?status=${data.id}`)}
+                >
                   {statusData.map((_, i) => (
                     <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                   ))}

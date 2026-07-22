@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, formatApiError } from "@/lib/api";
 import { STATUSES, statusMeta } from "@/lib/constants";
@@ -13,7 +13,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, LayoutGrid, Rows3, Download, Loader2, Trash2 } from "lucide-react";
+import { Plus, Search, LayoutGrid, Rows3, Download, Loader2, Trash2, FileSpreadsheet } from "lucide-react";
+import ExcelImportDialog from "@/components/ExcelImportDialog";
+import { useWording } from "@/contexts/WordingContext";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { API_BASE } from "@/lib/api";
@@ -22,9 +24,13 @@ import { TOKEN_KEY } from "@/lib/constants";
 export default function Ledger() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useWording();
   const qc = useQueryClient();
+  const [searchParams] = useSearchParams();
   const [q, setQ] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [statusFilter, setStatusFilter] = useState(() => searchParams.get("status") || "ALL");
+  const [countryFilter, setCountryFilter] = useState(() => searchParams.get("country") || "");
+  const [importOpen, setImportOpen] = useState(false);
   const [view, setView] = useState("cards");
   const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState("");
@@ -36,11 +42,12 @@ export default function Ledger() {
   }, []);
 
   const { data: vendors = [], isLoading } = useQuery({
-    queryKey: ["vendors", q, statusFilter],
+    queryKey: ["vendors", q, statusFilter, countryFilter],
     queryFn: async () => {
       const params = {};
       if (q) params.q = q;
       if (statusFilter !== "ALL") params.status = statusFilter;
+      if (countryFilter) params.country = countryFilter;
       return (await api.get("/vendors", { params })).data;
     },
   });
@@ -65,6 +72,17 @@ export default function Ledger() {
     onError: (e) => toast.error(formatApiError(e.response?.data?.detail)),
   });
 
+  const importMut = useMutation({
+    mutationFn: async (payload) => (await api.post("/vendors", payload)).data,
+    onSuccess: (v) => {
+      qc.invalidateQueries({ queryKey: ["vendors"] });
+      setImportOpen(false);
+      toast.success("Record dibuat dari import Excel");
+      navigate(`/vendors/${v.id}`);
+    },
+    onError: (e) => toast.error(formatApiError(e.response?.data?.detail)),
+  });
+
   function exportCsv() {
     const token = localStorage.getItem(TOKEN_KEY);
     fetch(`${API_BASE}/vendors-export/csv`, { headers: { Authorization: `Bearer ${token}` } })
@@ -85,16 +103,42 @@ export default function Ledger() {
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <div className="overline">Records</div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Vendor Ledger</h1>
-          <p className="text-sm text-muted-foreground mt-1">Kelola, telusuri, dan telaah semua record vendor asing.</p>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t("ledger.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("ledger.subtitle")}</p>
+          {(statusFilter !== "ALL" || countryFilter) && (
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
+              <span className="text-xs text-muted-foreground">Difilter dari Dashboard:</span>
+              {statusFilter !== "ALL" && (
+                <button
+                  data-testid="clear-status-filter"
+                  onClick={() => setStatusFilter("ALL")}
+                  className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary inline-flex items-center gap-1 hover:bg-primary/20"
+                >
+                  {statusMeta(statusFilter).label} ✕
+                </button>
+              )}
+              {countryFilter && (
+                <button
+                  data-testid="clear-country-filter"
+                  onClick={() => setCountryFilter("")}
+                  className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary inline-flex items-center gap-1 hover:bg-primary/20"
+                >
+                  {countryFilter} ✕
+                </button>
+              )}
+            </div>
+          )}
         </div>
         <div className="flex gap-2">
+          <Button data-testid="import-excel-btn" variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+            <FileSpreadsheet className="w-4 h-4 mr-1.5" /> {t("ledger.importExcel")}
+          </Button>
           <Button data-testid="export-csv-btn" variant="outline" size="sm" onClick={exportCsv}>
-            <Download className="w-4 h-4 mr-1.5" /> Export CSV
+            <Download className="w-4 h-4 mr-1.5" /> {t("ledger.exportCsv")}
           </Button>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button data-testid="new-vendor-btn" size="sm"><Plus className="w-4 h-4 mr-1.5" /> New Vendor</Button>
+              <Button data-testid="new-vendor-btn" size="sm"><Plus className="w-4 h-4 mr-1.5" /> {t("ledger.newVendor")}</Button>
             </DialogTrigger>
             <DialogContent data-testid="new-vendor-dialog">
               <DialogHeader><DialogTitle>Buat Record Vendor Baru</DialogTitle></DialogHeader>
@@ -273,6 +317,13 @@ export default function Ledger() {
           </div>
         </Card>
       )}
+
+      <ExcelImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        onCreate={(payload) => importMut.mutate(payload)}
+        creating={importMut.isPending}
+      />
     </div>
   );
 }

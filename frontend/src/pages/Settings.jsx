@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
+import WordingEditor from "@/components/WordingEditor";
 import { useAuth } from "@/contexts/AuthContext";
 import { api, formatApiError } from "@/lib/api";
 import { toast } from "sonner";
@@ -159,6 +160,8 @@ export default function Settings() {
           </div>
         </div>
       </Card>
+
+      {user?.role === "admin" && <WordingEditor />}
     </div>
   );
 }

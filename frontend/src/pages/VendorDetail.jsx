@@ -23,13 +23,16 @@ import {
   Trash2, Loader2, Info, PlayCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import ImageReferenceDrawer from "@/components/ImageReferenceDrawer";
 import { useAuth } from "@/contexts/AuthContext";
+import { useWording } from "@/contexts/WordingContext";
 
 export default function VendorDetail() {
   const { id } = useParams();
   const nav = useNavigate();
   const qc = useQueryClient();
   const { user } = useAuth();
+  const { t } = useWording();
 
   const { data: vendor, isLoading } = useQuery({
     queryKey: ["vendor", id],
@@ -47,6 +50,12 @@ export default function VendorDetail() {
     queryKey: ["documents", id],
     queryFn: async () => (await api.get(`/vendors/${id}/documents`)).data,
   });
+  const { data: generalDocs = {} } = useQuery({
+    queryKey: ["general-docs"],
+    queryFn: async () => (await api.get("/reference/general-docs")).data,
+  });
+  const [drawerCat, setDrawerCat] = useState(null);
+  const [drawerRef, setDrawerRef] = useState(null);
 
   const [form, setForm] = useState(null);
   const [historyText, setHistoryText] = useState("");
@@ -138,6 +147,11 @@ export default function VendorDetail() {
   const canSubmit  = user.role !== "approver"; // reviewer/admin submit
   const country = form.country && countryDb[form.country];
 
+  function getCatRef(cat) {
+    if (cat.scope === "general") return generalDocs[cat.key];
+    return country?.categories?.[cat.key];
+  }
+
   return (
     <div className="space-y-4" data-testid="vendor-detail-page">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -155,16 +169,16 @@ export default function VendorDetail() {
         <div className="flex gap-2 flex-wrap">
           {canSubmit && form.status === "DRAFT" && (
             <Button data-testid="submit-review-btn" size="sm" variant="outline" onClick={() => statusMut.mutate({ status: "IN_REVIEW", note: "Submitted for review" })}>
-              <PlayCircle className="w-4 h-4 mr-1.5" /> Start Review
+              <PlayCircle className="w-4 h-4 mr-1.5" /> {t("vendor.startReview")}
             </Button>
           )}
           {canSubmit && form.status === "IN_REVIEW" && (
             <>
               <Button data-testid="submit-approval-btn" size="sm" variant="outline" onClick={() => statusMut.mutate({ status: "PENDING_APPROVAL", note: "Sent for approval" })}>
-                <Send className="w-4 h-4 mr-1.5" /> Kirim ke Approver
+                <Send className="w-4 h-4 mr-1.5" /> {t("vendor.sendApprover")}
               </Button>
               <Button data-testid="request-clarification-btn" size="sm" variant="outline" onClick={() => statusMut.mutate({ status: "CLARIFICATION", note: "Perlu klarifikasi/revisi" })}>
-                <Info className="w-4 h-4 mr-1.5" /> Perlu Klarifikasi
+                <Info className="w-4 h-4 mr-1.5" /> {t("vendor.clarify")}
               </Button>
             </>
           )}
@@ -181,25 +195,25 @@ export default function VendorDetail() {
           {canApprove && form.status === "PENDING_APPROVAL" && (
             <>
               <Button data-testid="approve-btn" size="sm" onClick={() => statusMut.mutate({ status: "APPROVED", note: form.approverNotes || "" })}>
-                <CheckCircle2 className="w-4 h-4 mr-1.5" /> Approve
+                <CheckCircle2 className="w-4 h-4 mr-1.5" /> {t("vendor.approve")}
               </Button>
               <Button data-testid="return-btn" size="sm" variant="destructive" onClick={() => statusMut.mutate({ status: "RETURNED", note: form.approverNotes || "Returned" })}>
-                <XCircle className="w-4 h-4 mr-1.5" /> Return
+                <XCircle className="w-4 h-4 mr-1.5" /> {t("vendor.return")}
               </Button>
             </>
           )}
           {canApprove && form.status === "APPROVED" && (
             <Button data-testid="request-myssc-btn" size="sm" variant="outline" onClick={() => statusMut.mutate({ status: "MYSSC_REQUESTED", note: "MySSC diminta" })}>
-              <Send className="w-4 h-4 mr-1.5" /> Request MySSC
+              <Send className="w-4 h-4 mr-1.5" /> {t("vendor.requestMyssc")}
             </Button>
           )}
           {canApprove && form.status === "MYSSC_REQUESTED" && (
             <Button data-testid="mark-completed-btn" size="sm" onClick={() => statusMut.mutate({ status: "COMPLETED", note: "Selesai" })}>
-              <CheckCircle2 className="w-4 h-4 mr-1.5" /> Mark Completed
+              <CheckCircle2 className="w-4 h-4 mr-1.5" /> {t("vendor.markCompleted")}
             </Button>
           )}
           <Button data-testid="save-btn" size="sm" onClick={save} disabled={saveMut.isPending}>
-            {saveMut.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />} Simpan
+            {saveMut.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />} {t("vendor.save")}
           </Button>
         </div>
       </div>
@@ -333,6 +347,16 @@ export default function VendorDetail() {
                           <div>
                             <div className="text-sm font-medium">{c.label}</div>
                             <div className="text-[11px] text-muted-foreground">{c.group}</div>
+                            {getCatRef(c) && (
+                              <button
+                                type="button"
+                                data-testid={`view-example-${c.key}`}
+                                className="mt-1 text-[11px] text-primary hover:underline inline-flex items-center gap-1"
+                                onClick={() => { setDrawerCat(c); setDrawerRef(getCatRef(c)); }}
+                              >
+                                🖼 {t("directory.viewExample")}
+                              </button>
+                            )}
                           </div>
                           <label className="cursor-pointer inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 border border-border rounded hover:bg-muted" data-testid={`upload-${c.key}`}>
                             {uploadingKey === c.key ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
@@ -473,6 +497,14 @@ export default function VendorDetail() {
           )}
         </div>
       </div>
+
+      <ImageReferenceDrawer
+        open={!!drawerCat}
+        onClose={() => setDrawerCat(null)}
+        category={drawerCat}
+        country={form.country}
+        refEntry={drawerRef}
+      />
     </div>
   );
 }

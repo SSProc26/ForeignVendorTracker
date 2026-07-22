@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { useWording } from "@/contexts/WordingContext";
 import { Plus, KeyRound, Trash2, Loader2 } from "lucide-react";
 import { ROLES } from "@/lib/constants";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,6 +21,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const DEFAULT_PASSCODE = "123456";
 
 export default function AdminUsers() {
+  const { t } = useWording();
   const qc = useQueryClient();
   const { user: me } = useAuth();
   const { data: users = [], isLoading } = useQuery({
@@ -66,7 +68,7 @@ export default function AdminUsers() {
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <div className="overline">Admin</div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Member Management</h1>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t("admin.usersTitle")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Kelola member, role & status aktif. Passcode default: <span className="mono">{DEFAULT_PASSCODE}</span>.
           </p>

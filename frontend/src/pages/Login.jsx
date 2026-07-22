@@ -1,3 +1,4 @@
+import { useWording } from "@/contexts/WordingContext";
 import React, { useState, useEffect, useMemo } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,6 +21,7 @@ const ROLE_TAG = {
 export default function Login() {
   const { user, loading, login } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { t } = useWording();
   const navigate = useNavigate();
 
   const [members, setMembers] = useState([]);
@@ -140,8 +142,8 @@ export default function Login() {
               <Building2 className="w-5 h-5" />
             </div>
             <div>
-              <div className="brand-title text-lg leading-none">Vendor Tracker</div>
-              <div className="text-[11px] text-muted-foreground">Enterprise onboarding</div>
+              <div className="brand-title text-lg leading-none">{t("login.brand")}</div>
+              <div className="text-[11px] text-muted-foreground">{t("login.tagline")}</div>
             </div>
           </div>
 
@@ -213,7 +215,7 @@ export default function Login() {
                   </div>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground">Masukkan passcode 6-digit</p>
+              <p className="text-sm text-muted-foreground">{t("login.subtitle")}</p>
 
               <div data-testid="pin-dots" className="mt-4 flex items-center justify-center gap-3">
                 {Array.from({ length: 6 }).map((_, i) => (
