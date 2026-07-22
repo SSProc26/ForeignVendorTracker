@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useWording } from "@/contexts/WordingContext";
 import ThemeSwitcher from "./ThemeSwitcher";
 import {
   LayoutDashboard, ClipboardList, ListChecks, Activity, Globe2, TrendingUp,
@@ -14,21 +15,22 @@ import {
 import { Toaster } from "@/components/ui/sonner";
 
 const NAV = [
-  { to: "/",          label: "Dashboard",     icon: LayoutDashboard,   testid: "nav-dashboard" },
-  { to: "/ledger",    label: "Ledger",        icon: ClipboardList,     testid: "nav-ledger" },
-  { to: "/queue",     label: "Antrian Saya",  icon: ListChecks,        testid: "nav-queue" },
-  { to: "/monitor",   label: "Monitor",       icon: Activity,          testid: "nav-monitor" },
-  { to: "/directory", label: "Country Ref.",  icon: Globe2,            testid: "nav-directory" },
-  { to: "/insights",  label: "Insights & SLA", icon: TrendingUp,       testid: "nav-insights" },
+  { to: "/",          key: "nav.dashboard",  icon: LayoutDashboard,   testid: "nav-dashboard" },
+  { to: "/ledger",    key: "nav.ledger",     icon: ClipboardList,     testid: "nav-ledger" },
+  { to: "/queue",     key: "nav.queue",      icon: ListChecks,        testid: "nav-queue" },
+  { to: "/monitor",   key: "nav.monitor",    icon: Activity,          testid: "nav-monitor" },
+  { to: "/directory", key: "nav.directory",  icon: Globe2,            testid: "nav-directory" },
+  { to: "/insights",  key: "nav.insights",   icon: TrendingUp,        testid: "nav-insights" },
 ];
 
 const ADMIN_NAV = [
-  { to: "/admin/users",  label: "Users",       icon: Users,       testid: "nav-admin-users", roles: ["admin"] },
-  { to: "/admin/audit",  label: "Audit Log",   icon: ShieldCheck, testid: "nav-audit",       roles: ["admin"] },
+  { to: "/admin/users",  key: "nav.users",     icon: Users,       testid: "nav-admin-users", roles: ["admin"] },
+  { to: "/admin/audit",  key: "nav.audit",     icon: ShieldCheck, testid: "nav-audit",       roles: ["admin"] },
 ];
 
 export default function Layout() {
   const { user, logout } = useAuth();
+  const { t } = useWording();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => {
@@ -55,8 +57,8 @@ export default function Layout() {
               <FileSpreadsheet className="w-5 h-5" style={{ color: "hsl(var(--sidebar-accent))" }} />
             </div>
             <div className={`leading-tight min-w-0 ${collapsed ? "lg:hidden" : ""}`}>
-              <div className="brand-title text-base text-white truncate">Vendor Tracker</div>
-              <div className="text-[10px] uppercase tracking-wider text-white/50 truncate">Compliance Suite</div>
+              <div className="brand-title text-base text-white truncate">{t("app.brand")}</div>
+              <div className="text-[10px] uppercase tracking-wider text-white/50 truncate">{t("app.brandSub")}</div>
             </div>
           </div>
           <button
@@ -78,50 +80,50 @@ export default function Layout() {
         </button>
 
         <nav className="p-3 space-y-0.5">
-          <div className={`overline px-2 pb-2 pt-1 ${collapsed ? "lg:hidden" : ""}`} style={{ color: "hsl(var(--sidebar-fg) / 0.5)" }}>Workflow</div>
+          <div className={`overline px-2 pb-2 pt-1 ${collapsed ? "lg:hidden" : ""}`} style={{ color: "hsl(var(--sidebar-fg) / 0.5)" }}>{t("nav.groupWorkflow")}</div>
           {NAV.map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
               end={n.to === "/"}
               data-testid={n.testid}
-              title={collapsed ? n.label : undefined}
+              title={collapsed ? t(n.key) : undefined}
               className={({ isActive }) => `sidebar-item ${isActive ? "active" : ""} ${collapsed ? "lg:justify-center" : ""}`}
               onClick={() => setMobileOpen(false)}
             >
               <n.icon className="w-4 h-4 shrink-0" />
-              <span className={collapsed ? "lg:hidden" : ""}>{n.label}</span>
+              <span className={collapsed ? "lg:hidden" : ""}>{t(n.key)}</span>
             </NavLink>
           ))}
 
           {user?.role === "admin" && (
             <>
-              <div className={`overline px-2 pt-4 pb-2 ${collapsed ? "lg:hidden" : ""}`} style={{ color: "hsl(var(--sidebar-fg) / 0.5)" }}>Admin</div>
+              <div className={`overline px-2 pt-4 pb-2 ${collapsed ? "lg:hidden" : ""}`} style={{ color: "hsl(var(--sidebar-fg) / 0.5)" }}>{t("nav.groupAdmin")}</div>
               {ADMIN_NAV.map((n) => (
                 <NavLink
                   key={n.to}
                   to={n.to}
                   data-testid={n.testid}
-                  title={collapsed ? n.label : undefined}
+                  title={collapsed ? t(n.key) : undefined}
                   className={({ isActive }) => `sidebar-item ${isActive ? "active" : ""} ${collapsed ? "lg:justify-center" : ""}`}
                   onClick={() => setMobileOpen(false)}
                 >
                   <n.icon className="w-4 h-4 shrink-0" />
-                  <span className={collapsed ? "lg:hidden" : ""}>{n.label}</span>
+                  <span className={collapsed ? "lg:hidden" : ""}>{t(n.key)}</span>
                 </NavLink>
               ))}
             </>
           )}
 
-          <div className={`overline px-2 pt-4 pb-2 ${collapsed ? "lg:hidden" : ""}`} style={{ color: "hsl(var(--sidebar-fg) / 0.5)" }}>Preferences</div>
+          <div className={`overline px-2 pt-4 pb-2 ${collapsed ? "lg:hidden" : ""}`} style={{ color: "hsl(var(--sidebar-fg) / 0.5)" }}>{t("nav.groupPreferences")}</div>
           <NavLink
             to="/settings"
             data-testid="nav-settings"
-            title={collapsed ? "Settings" : undefined}
+            title={collapsed ? t("nav.settings") : undefined}
             className={({ isActive }) => `sidebar-item ${isActive ? "active" : ""} ${collapsed ? "lg:justify-center" : ""}`}
             onClick={() => setMobileOpen(false)}
           >
-            <Settings className="w-4 h-4 shrink-0" /><span className={collapsed ? "lg:hidden" : ""}>Settings</span>
+            <Settings className="w-4 h-4 shrink-0" /><span className={collapsed ? "lg:hidden" : ""}>{t("nav.settings")}</span>
           </NavLink>
         </nav>
 
@@ -160,8 +162,8 @@ export default function Layout() {
                 <Menu className="w-5 h-5" />
               </button>
               <div className="min-w-0">
-                <div className="text-[11px] uppercase tracking-widest text-muted-foreground">Foreign Vendor</div>
-                <div className="brand-title text-lg leading-tight truncate">Registration Tracker</div>
+                <div className="text-[11px] uppercase tracking-widest text-muted-foreground">{t("app.headerOver")}</div>
+                <div className="brand-title text-lg leading-tight truncate">{t("app.headerTitle")}</div>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -185,7 +187,7 @@ export default function Layout() {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem data-testid="menu-settings" onClick={() => navigate("/settings")}>
-                    <Settings className="w-4 h-4 mr-2" /> Settings
+                    <Settings className="w-4 h-4 mr-2" /> {t("nav.settings")}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem data-testid="menu-logout" onClick={async () => { await logout(); navigate("/login", { replace: true }); }}>
