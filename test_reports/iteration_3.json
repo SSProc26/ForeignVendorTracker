@@ -1,0 +1,44 @@
+{
+  "summary": "Iteration 3 tested the new passcode-only auth model + admin member creation + Insights extensions (heatmap, rework, ETA, PDF export). Found and fixed 3 critical bugs: (1) create_user was inserting `email: None` which violated the sparse-unique email index on the 2nd userless-of-email create → 500. (2) log_audit accessed user['email'] directly, throwing KeyError for users without an email → login for admin-created users 500ed. (3) Frontend AuthContext.login still sent legacy `{email, password}` payload → every UI login hit 422. After fixes, all 57 pytest cases pass (auth members/login/logout, change-passcode, user CRUD w/ default passcode, reset-password empty body, vendors CRUD + RBAC, documents, analytics summary+insights extended shape (time_heatmap=168 cells, rework distribution 4 buckets, eta rows), PDF export via ?auth= AND Bearer header, CSV, theme, PWA). Frontend UI verified: PIN pad login (wrong→login-error 'Passcode salah', right→auto-submit navigates to /), admin New Member dialog has only name+role, toasts mention 123456, Insights page has data-testid=heatmap + export-pdf-btn, Settings page has data-testid=current-passcode/new-passcode/change-passcode-btn.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_backend.py",
+    "/app/backend/tests/test_insights.py",
+    "/app/backend/tests/conftest.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Main agent: verify the 3 bug fixes I applied (server.py create_user, server.py log_audit, frontend AuthContext.login). All are minimal (~5 lines total) and required for the new auth model to function.",
+    "Consider a partial-index (partialFilterExpression) on users.email instead of sparse=True so `email:null` documents don't collide should someone reintroduce explicit-null inserts.",
+    "Backend server.py is now ~860 lines; splitting into routers (auth, users, vendors, documents, analytics) is overdue."
+  ],
+  "critical_code_review_comments": [
+    "server.py `db.users.create_index('email', unique=True, sparse=True)` combined with previously inserting `email: null` was the root cause of #1. Fixed by omitting the field entirely.",
+    "sla_by_handler still credits the *last handler* for the full DRAFT→APPROVED time. Same note as iteration 2 — not addressed.",
+    "ETA baseline is `country_avg` OR `global_avg` (defaults 7d only if there are NO approved samples anywhere). If all approved samples happened within a few seconds of creation (as in test data) baseline≈0, so ETA=0 for all pending vendors. Consider a minimum-baseline floor (e.g. max(baseline, 1)).",
+    "Insights.jsx and server.py analytics_insights() have grown large; both should be split.",
+    "Frontend `api.post('/auth/change-passcode', {...})` correctly uses body params; Settings.jsx look clean."
+  ],
+  "updated_files": [
+    "/app/backend/server.py",
+    "/app/frontend/src/contexts/AuthContext.jsx",
+    "/app/backend/tests/conftest.py",
+    "/app/backend/tests/test_backend.py",
+    "/app/backend/tests/test_insights.py"
+  ],
+  "success_rate": {"backend": "100% (57/57)", "frontend": "100% of tested flows (login PIN, admin users dialog, reset toast, insights sections, settings pin inputs)"},
+  "test_credentials": "Admin: fetch user_id from GET /api/auth/members where role='admin', name='Administrator'; passcode='123456'.",
+  "seed_data_creation": "Tests create several TEST_-prefixed users and vendors; each test cleans up after itself where feasible. Reviewer/approver fixture users are module-scoped and left in place (harmless).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Run full backend regression: `cd /app/backend && REACT_APP_BACKEND_URL=$(grep REACT_APP_BACKEND_URL /app/frontend/.env | cut -d= -f2) python -m pytest tests/ --junitxml=/app/test_reports/pytest/pytest_results.xml`. Login pattern: GET /api/auth/members → find admin id → POST /api/auth/login with {user_id, passcode:'123456'} → use returned token as Bearer. New users get default passcode 123456. When creating users without email, ensure server never inserts `email:null` (I omit the field entirely). PDF endpoint accepts both `Authorization: Bearer <t>` header AND `?auth=<t>` query param.",
+  "rca of the issue": "Bug1 (500 on 2nd userless email create): `create_user` set `email: None` explicitly; the users.email index is sparse=True which SKIPS missing fields but treats an explicit null as a value → 2 documents with `email:null` collided (DuplicateKeyError). Fix: omit `email` field when payload.email is falsy. Bug2 (500 on login for email-less users): `log_audit` did `user['email']` — KeyError for docs without the field. Fix: `user.get('email','')`. Bug3 (422 on all frontend logins): AuthContext.login accepted (email, password) params and posted `{email, password}` — the new server expects `{user_id, passcode}`. Login.jsx already called `login(selected.id, pin)` but the payload key names were wrong. Fix: rename params and payload keys in AuthContext.jsx."
+}

@@ -1,0 +1,39 @@
+{
+  "summary": "Iteration 2 focused on the new SLA/Insights feature. Added /app/backend/tests/test_insights.py (12 new tests). Total suite: 49/49 pytest cases PASS across auth, users, vendors, documents, analytics summary+insights, transitions log, aging, RBAC, return-rate, weekly trend, category completeness, country risk, CSV export, PWA, settings. Frontend /insights page renders end-to-end with real backend data: 4 KPIs, Dwell-Time bar chart, Return vs Approved bars, 8-week trend line, Handler Performance table (2 rows), Aging Report table (10 rows) with correct data-testids, Country Risk + Category Completeness. All pre-existing behaviours (theme, admin CRUD, vendor CRUD, documents, audit log) unchanged.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Insights", "issues": ["Benign Recharts 'width(-1) height(-1)' console warnings during first mount before ResponsiveContainer measures — same as iteration 1, not a real bug."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_insights.py",
+    "/app/backend/tests/test_backend.py",
+    "/app/backend/tests/conftest.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "analytics_insights() re-reads all vendors and transitions into memory on every call (up to 2000 vendors, 20000 transitions). Fine for current scale but should be moved to a mongo aggregation pipeline or cached (30s TTL matches the frontend refetchInterval) before scaling past a few thousand vendors.",
+    "sla_by_handler credits the *last handler that touched the vendor* — if a reviewer submits and a different approver later approves, the approver gets credit for the full DRAFT→APPROVED elapsed time. Consider crediting the approver only for their leg, or splitting per handler.",
+    "DRAFT dwell time uses vendor.created_at as start, but if a vendor is later moved back into DRAFT (not currently possible via workflow but not prevented) the dwell math becomes negative and is silently dropped (`days >= 0` guard). Fine, but worth an explicit invariant.",
+    "status_since is set on every transition but never seeded on legacy vendors created before this change — aging falls back to updated_at / created_at (already handled). Consider a one-time migration to backfill status_since = updated_at for older records.",
+    "server.py is now ~825 lines (was ~640). Refactoring into routers/{auth, users, vendors, documents, analytics}.py is now overdue.",
+    "The Insights JSX file mixes chart rendering, KPI computation and table rendering in one 350-line component. Extracting each section into its own file would improve maintainability."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_insights.py"
+  ],
+  "success_rate": {"backend": "100% (49/49)", "frontend": "100% of tested flows"},
+  "test_credentials": "admin@vendortracker.io / Admin@12345 (as documented in /app/memory/test_credentials.md).",
+  "seed_data_creation": "Insights tests created ~5 fresh TEST_-prefixed vendors (TEST InsightsFlow, TEST InsRBAC, TEST InsReturn, TEST InsAging, TEST DeleteMe) and 1 TEST_ins_rev_* reviewer user. These are exercised through the full status workflow and left in place (harmless, prefixed).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Full backend regression is in /app/backend/tests/{test_backend.py,test_insights.py}. Run with `pytest -n 2 backend/tests --junitxml=/app/test_reports/pytest/pytest_results.xml`. The Insights UI is data-driven from GET /api/analytics/insights (30s refetchInterval). Key data-testids: insights-page, handler-row-<user_id>, aging-row-<vendor_id>, nav-insights. Insights page has no filter controls yet — all data is unconditional. Category completeness is sorted ascending by rate (lowest coverage first). sla_by_handler is sorted by approved_count desc.",
+  "rca of the issue": "No issues to root-cause. One test authored initially (avg_days_to_approved > 0) had a precision problem because sub-second elapsed times round to 0.00 days at 2 decimals — relaxed to >= 0 with an inline comment. Not a product bug."
+}

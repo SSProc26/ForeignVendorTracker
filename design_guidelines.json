@@ -1,0 +1,125 @@
+{
+  "design_context": "Corporate compliance and vendor onboarding dashboard. Tone is professional, trustworthy, and efficient. Avoid playful/casual styles. Emphasize data density without clutter.",
+  "theme_tokens": {
+    "global_light": {
+      "--background": "0 0% 98%",
+      "--foreground": "240 10% 10%",
+      "--card": "0 0% 100%",
+      "--card-foreground": "240 10% 10%",
+      "--popover": "0 0% 100%",
+      "--popover-foreground": "240 10% 10%",
+      "--muted": "240 5% 96%",
+      "--muted-foreground": "240 5% 45%",
+      "--border": "240 5% 90%",
+      "--input": "240 5% 90%",
+      "--radius": "0.25rem"
+    },
+    "themes": {
+      "steel": {
+        "--primary": "210 100% 35%",
+        "--primary-foreground": "0 0% 100%",
+        "--sidebar": "215 25% 15%",
+        "--sidebar-foreground": "0 0% 100%"
+      },
+      "forest": {
+        "--primary": "140 60% 25%",
+        "--primary-foreground": "0 0% 100%",
+        "--sidebar": "145 20% 12%",
+        "--sidebar-foreground": "0 0% 100%"
+      },
+      "burgundy": {
+        "--primary": "350 50% 30%",
+        "--primary-foreground": "0 0% 100%",
+        "--sidebar": "350 20% 12%",
+        "--sidebar-foreground": "0 0% 100%"
+      },
+      "slate": {
+        "--primary": "215 15% 40%",
+        "--primary-foreground": "0 0% 100%",
+        "--sidebar": "215 15% 15%",
+        "--sidebar-foreground": "0 0% 100%"
+      },
+      "copper": {
+        "--primary": "20 60% 45%",
+        "--primary-foreground": "0 0% 100%",
+        "--sidebar": "20 20% 12%",
+        "--sidebar-foreground": "0 0% 100%"
+      }
+    }
+  },
+  "typography": {
+    "fonts": {
+      "headings": "Outfit, sans-serif",
+      "body": "Plus Jakarta Sans, sans-serif",
+      "monospace": "JetBrains Mono, monospace"
+    },
+    "rules": [
+      "Do NOT use Inter or Roboto.",
+      "Headings must use tracking-tight.",
+      "Overlines and table headers must be uppercase, tracking-[0.1em], text-xs.",
+      "All normal body text should be text-sm or text-base for high data density readability."
+    ]
+  },
+  "layout": {
+    "grid_system": "Bento-style grids for dashboards (grid-cols-1 md:grid-cols-4 lg:grid-cols-12).",
+    "spacing": "Use p-6 or p-8 for main cards. Table cells should have py-3 px-4. Overall spacing is generous but structured.",
+    "sidebar": "Fixed left sidebar. 240px wide on desktop, collapsible to 64px. Must use theme's --sidebar color.",
+    "header": "Sticky top bar, solid background bg-white (NO transparent header), z-50, border-b border-border."
+  },
+  "components": {
+    "cards": "Flat solid surfaces (bg-card). 1px border (border-border). No soft shadows, shadow-sm at most.",
+    "buttons": "Slightly rounded (radius 0.25rem). Solid primary color for primary actions, outline/ghost for secondary. Use icon + text.",
+    "inputs": "Square or slightly rounded (0.25rem). 1px border. Focus state MUST be ring-2 ring-primary/20 border-primary.",
+    "tables": "Shadcn Table. Dense. border-b on rows. Hover state: bg-muted/50. Text should be left-aligned unless numerical.",
+    "tabs": "Underline style preferred over pill style. Active tab has border-b-2 border-primary text-primary.",
+    "drawers_modals": "Must have solid bg-background. Include backdrop-blur-sm on the overlay wrapper (bg-black/40). Always include a clear close (X) icon.",
+    "toasts": "Use Sonner component. Position bottom-right. Solid background.",
+    "status_badges": {
+      "draft": "bg-slate-100 text-slate-700 border border-slate-200 text-xs px-2 py-0.5 rounded-full",
+      "in_review": "bg-blue-50 text-blue-700 border border-blue-200 text-xs px-2 py-0.5 rounded-full",
+      "pending_approval": "bg-amber-50 text-amber-700 border border-amber-200 text-xs px-2 py-0.5 rounded-full",
+      "approved": "bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs px-2 py-0.5 rounded-full",
+      "returned": "bg-red-50 text-red-700 border border-red-200 text-xs px-2 py-0.5 rounded-full"
+    },
+    "workflow_stepper": "Horizontal timeline above vendor forms showing current status visually."
+  },
+  "motion": {
+    "transitions": "Use Framer Motion for page route transitions (fade in, slight slide up).",
+    "hover": "Subtle translate-y-[1px] on actionable cards. Background color shifts on rows/buttons.",
+    "rules": [
+      "Avoid excessive bounce. Use ease-out or ease-in-out with short durations (150-200ms)."
+    ]
+  },
+  "image_urls": {
+    "login_background": {
+      "url": "https://images.unsplash.com/photo-1567943183748-3a7542120c90?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1Mjh8MHwxfHNlYXJjaHw0fHxhYnN0cmFjdCUyMGFyY2hpdGVjdHVyZSUyMG1vZGVybnxlbnwwfHx8fDE3ODQ3MjE4ODZ8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Abstract architecture, curved modern building (use with heavy dark/brand overlay for login page left panel)"
+    },
+    "empty_state_office": {
+      "url": "https://images.pexels.com/photos/5717561/pexels-photo-5717561.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Minimalist modern desk (use for empty state in ledger or analytics)"
+    }
+  },
+  "instructions_to_main_agent": [
+    "Create a PWA by adding a manifest.json in the public folder and registering a service worker (using Vite PWA plugin or manual SW file). Make sure it includes offline caching.",
+    "Implement a ThemeContext provider in React that maps the 5 user-selected themes (steel, forest, burgundy, slate, copper) to data-theme attributes on the document body.",
+    "Set up JWT Authentication context. Build a split-layout login page using the provided login_background image on the left.",
+    "Build a layout component with a Sidebar (navigation) and a solid Header.",
+    "Implement the Vendor Ledger view (Table and Grid/Card toggle). Include a search bar and filter by status.",
+    "Implement the Vendor Detail form with a heavy emphasis on Master Data input and a side-panel for 'Country Document Requirements'.",
+    "Build the Admin User Management panel (CRUD table for users and roles).",
+    "Build the Analytics Dashboard using Recharts (bar chart for country breakdown, pie chart for status distribution).",
+    "Ensure all .js files use standard React (JSX) imports without TypeScript type annotations (.jsx or .js). Use prop-types if necessary.",
+    "Add data-testid attributes to ALL interactive elements (buttons, inputs, links, tabs) for testing."
+  ],
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "All interactive and key informational elements MUST include a data-testid attribute to facilitate robust automated testing.",
+    "Do not use generic centered layouts. Prioritize left-aligned, highly structured data grids.",
+    "Do not use purple/violet gradients. Adhere strictly to the 5 corporate theme palettes provided.",
+    "Create depth through 1px borders and distinct background sections (bg-muted vs bg-white), NOT heavy drop shadows.",
+    "Never use completely transparent backgrounds for overlays, sidebars, or dropdowns. Always use solid colors or heavy backdrop blurs.",
+    "Use 'lucide-react' for all icons.",
+    "Use 'sonner' for toast notifications (success/error feedback).",
+    "Every page and form interaction must provide immediate visual feedback (loading spinners, disabled states)."
+  ]
+}

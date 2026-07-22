@@ -1,0 +1,204 @@
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 210 20% 98%;
+  --foreground: 222 25% 12%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 25% 12%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 25% 12%;
+  --muted: 220 14% 96%;
+  --muted-foreground: 220 9% 42%;
+  --border: 220 13% 89%;
+  --input: 220 13% 89%;
+  --accent: 220 14% 96%;
+  --accent-foreground: 222 25% 12%;
+  --secondary: 220 14% 96%;
+  --secondary-foreground: 222 25% 12%;
+  --destructive: 0 72% 46%;
+  --destructive-foreground: 0 0% 100%;
+  --ring: var(--primary);
+  --radius: 0.375rem;
+}
+
+/* ---------- 5 Corporate Themes ---------- */
+[data-theme="steel"] {
+  --primary: 210 100% 32%;
+  --primary-foreground: 0 0% 100%;
+  --sidebar: 215 32% 14%;
+  --sidebar-fg: 210 25% 92%;
+  --sidebar-accent: 210 100% 45%;
+  --brand-accent: 199 89% 48%;
+}
+[data-theme="forest"] {
+  --primary: 148 55% 24%;
+  --primary-foreground: 0 0% 100%;
+  --sidebar: 148 30% 11%;
+  --sidebar-fg: 148 15% 90%;
+  --sidebar-accent: 148 65% 40%;
+  --brand-accent: 158 64% 40%;
+}
+[data-theme="burgundy"] {
+  --primary: 350 60% 32%;
+  --primary-foreground: 0 0% 100%;
+  --sidebar: 350 30% 13%;
+  --sidebar-fg: 350 15% 92%;
+  --sidebar-accent: 350 65% 45%;
+  --brand-accent: 12 76% 51%;
+}
+[data-theme="slate"] {
+  --primary: 215 20% 32%;
+  --primary-foreground: 0 0% 100%;
+  --sidebar: 215 25% 14%;
+  --sidebar-fg: 215 15% 92%;
+  --sidebar-accent: 215 40% 50%;
+  --brand-accent: 210 40% 55%;
+}
+[data-theme="copper"] {
+  --primary: 22 65% 40%;
+  --primary-foreground: 0 0% 100%;
+  --sidebar: 22 30% 13%;
+  --sidebar-fg: 22 15% 92%;
+  --sidebar-accent: 22 75% 50%;
+  --brand-accent: 32 90% 50%;
+}
+/* Editorial: ported 1:1 from the original ink & paper HTML reference (gold/steel/rust accents,
+   Source Serif 4 headlines, IBM Plex Sans/Mono body). Background/paper tones applied via
+   .editorial-surface helper class since the shared layout uses a white main background. */
+[data-theme="editorial"] {
+  --primary: 38 59% 45%;         /* gold */
+  --primary-foreground: 209 34% 17%; /* ink */
+  --sidebar: 209 34% 17%;        /* ink */
+  --sidebar-fg: 42 20% 90%;
+  --sidebar-accent: 38 59% 45%;  /* gold */
+  --brand-accent: 190 30% 35%;   /* steel */
+  --background: 42 36% 95%;      /* paper */
+  --foreground: 209 34% 17%;     /* ink */
+  --card: 48 38% 97%;            /* paper-raised */
+  --card-foreground: 209 34% 17%;
+  --border: 44 26% 80%;          /* line */
+  --input: 44 26% 80%;
+  --muted: 44 20% 90%;
+  --muted-foreground: 208 17% 35%; /* ink-soft */
+  --destructive: 5 53% 43%;      /* rust */
+}
+[data-theme="editorial"] body {
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+[data-theme="editorial"] h1,
+[data-theme="editorial"] h2,
+[data-theme="editorial"] h3,
+[data-theme="editorial"] .brand-title {
+  font-family: 'Source Serif 4', serif;
+  letter-spacing: 0;
+  font-weight: 700;
+}
+[data-theme="editorial"] code,
+[data-theme="editorial"] pre,
+[data-theme="editorial"] .mono {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+@layer base {
+  * { @apply border-border; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Outfit", sans-serif;
+    letter-spacing: -0.015em;
+    font-weight: 700;
+  }
+  code, pre, .mono { font-family: "JetBrains Mono", monospace; }
+}
+
+/* ---------- Global helpers ---------- */
+.brand-title {
+  font-family: "Outfit", sans-serif;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+}
+
+.overline {
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+}
+
+.grid-lines-bg {
+  background-image:
+    linear-gradient(hsl(var(--border) / 0.6) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--border) / 0.6) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.status-dot {
+  width: 8px; height: 8px; border-radius: 999px; display: inline-block;
+}
+
+.sidebar-surface {
+  background: hsl(var(--sidebar));
+  color: hsl(var(--sidebar-fg));
+}
+
+.sidebar-item {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  color: hsl(var(--sidebar-fg) / 0.75);
+  font-size: 0.875rem;
+  transition: background 150ms ease, color 150ms ease, transform 150ms ease;
+  border: 1px solid transparent;
+}
+.sidebar-item:hover {
+  background: hsl(var(--sidebar-fg) / 0.06);
+  color: hsl(var(--sidebar-fg));
+}
+.sidebar-item.active {
+  background: hsl(var(--sidebar-accent) / 0.15);
+  color: hsl(var(--sidebar-fg));
+  border-color: hsl(var(--sidebar-accent) / 0.35);
+  position: relative;
+}
+.sidebar-item.active::before {
+  content: "";
+  position: absolute; left: -1px; top: 8px; bottom: 8px;
+  width: 3px; border-radius: 3px;
+  background: hsl(var(--sidebar-accent));
+}
+
+/* Reveal animation on route mount */
+.route-fade {
+  animation: rf 220ms ease-out;
+}
+@keyframes rf {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
+
+/* Focus */
+:focus-visible { outline: 2px solid hsl(var(--primary) / 0.4); outline-offset: 2px; }
+
+/* Utility */
+.card-plain {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+}
