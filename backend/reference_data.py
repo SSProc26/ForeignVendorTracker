@@ -105,7 +105,11 @@ COUNTRY_DB = {
         "annualTaxReturn": {"example": "Körperschaftsteuererklärung (Corporate Tax Return) acknowledgement", "concern": "Cek tahun pajak & status eingereicht (submitted)."},
         "otherTax": {"example": "Umsatzsteuervoranmeldung (VAT filing) evidence", "concern": "Cek kepatuhan pelaporan VAT berkala."},
     }},
-    "India": {"tag": "IN", "apostille": False, "categories": {
+    # -------------------------------------------------------------------------
+    # DIPERBAIKI: India apostille=True (anggota HCCH sejak 14 Juli 2005, EIF 2005-07-14)
+    # File lama salah: apostille=False
+    # -------------------------------------------------------------------------
+    "India": {"tag": "IN", "apostille": True, "categories": {
         "boardOwnership": {"example": "MCA Master Data — Director/DIN & Shareholding pattern (Form MGT-7)", "concern": "Cocokkan DIN direktur & shareholding dengan MCA portal."},
         "companyRegistration": {"example": "Certificate of Incorporation — MCA (CIN Number)", "concern": "Cek CIN aktif & status \"Active\" di MCA portal."},
         "businessLicense": {"example": "Shop & Establishment License / sector license", "concern": "Cek license berlaku sesuai lokasi & jenis usaha."},
@@ -115,7 +119,11 @@ COUNTRY_DB = {
         "annualTaxReturn": {"example": "Income Tax Return (ITR) acknowledgement tahun sebelumnya", "concern": "Cek assessment year sesuai & status filed."},
         "otherTax": {"example": "GST Return filing evidence (GSTR)", "concern": "Cek kepatuhan pelaporan GST bulanan/tahunan."},
     }},
-    "Malaysia": {"tag": "MY", "apostille": True, "categories": {
+    # -------------------------------------------------------------------------
+    # DIPERBAIKI: Malaysia apostille=False (BUKAN anggota Konvensi Apostille Den Haag)
+    # File lama salah: apostille=True — dokumen Malaysia WAJIB legalisir via KBRI KL
+    # -------------------------------------------------------------------------
+    "Malaysia": {"tag": "MY", "apostille": False, "categories": {
         "boardOwnership": {"example": "e-Info SSM — Particulars of Directors & Shareholders", "concern": "Cocokkan nama direktur & shareholder dengan e-Info SSM terbaru."},
         "companyRegistration": {"example": "Certificate of Incorporation — SSM (Suruhanjaya Syarikat Malaysia)", "concern": "Cek nomor registrasi & status aktif di SSM."},
         "businessLicense": {"example": "Business/sector license sesuai bidang usaha", "concern": "Cek license berlaku & sesuai aktivitas usaha."},
@@ -138,3 +146,14 @@ COUNTRY_DB = {
 }
 
 WORKFLOW_STATUSES = ["DRAFT", "IN_REVIEW", "CLARIFICATION", "PENDING_APPROVAL", "RETURNED", "APPROVED", "MYSSC_REQUESTED", "COMPLETED"]
+
+# ---------------------------------------------------------------------------
+# Auto-sync flag apostille dari apostille_data.py (HCCH status table resmi)
+# Baris ini OVERRIDE flag "apostille" di atas bila ada perubahan di masa depan.
+# Sumber: https://www.hcch.net/en/instruments/conventions/status-table/?cid=41
+# ---------------------------------------------------------------------------
+try:
+    from apostille_data import apply_apostille_status as _aas  # noqa: E402
+    _aas(COUNTRY_DB)
+except ImportError:
+    pass  # fallback aman bila apostille_data.py belum ada di environment
